@@ -4,21 +4,24 @@ export const PIPELINE = ["seeFood", "labelPhoto", "judgeHotdog"] as const;
 
 const SCORE: Record<WorkflowStepStatus, number> = {
   queued: 0,
-  running: 0.55,
+  pending: 0.25,
+  running: 0.6,
   succeeded: 1,
   failed: 1,
 };
 
-type NamedRun = {
+export type NamedRun = {
   id: string;
   name: string;
   status: string;
+  startedAt?: string;
 };
 
 /** Map a Render task-run status onto the UI step states. */
 export function normalizeStatus(status: string): WorkflowStepStatus {
   const value = status.toLowerCase();
   if (value === "running") return "running";
+  if (value === "pending" || value === "paused") return "pending";
   if (value === "succeeded" || value === "completed") return "succeeded";
   if (value === "failed" || value === "canceled" || value === "cancelled") {
     return "failed";
@@ -27,7 +30,11 @@ export function normalizeStatus(status: string): WorkflowStepStatus {
 }
 
 /** Build a progress snapshot from the live Render task-run tree. */
-export function snapshotFromRuns(rootTaskRunId: string, runs: NamedRun[]): WorkflowSnapshot {
+export function snapshotFromRuns(
+  taskId: string,
+  rootTaskRunId: string,
+  runs: NamedRun[],
+): WorkflowSnapshot {
   const byName = new Map(runs.map((run) => [run.name, run]));
   const extras = runs
     .map((run) => run.name)
@@ -40,27 +47,27 @@ export function snapshotFromRuns(rootTaskRunId: string, runs: NamedRun[]): Workf
       name,
       status: run ? normalizeStatus(run.status) : "queued",
       taskRunId: run?.id,
+      startedAt: run?.startedAt,
     };
   });
-
-  for (let index = 0; index < steps.length; index += 1) {
-    const laterActive = steps.slice(index + 1).some((step) => step.status !== "queued");
-    if (laterActive && steps[index].status === "queued") {
-      steps[index].status = "running";
-    }
-  }
 
   const raw = steps.reduce((sum, step) => sum + SCORE[step.status], 0) / steps.length;
   const allDone = steps.every((step) => step.status === "succeeded" || step.status === "failed");
   const percent = allDone ? 100 : Math.max(8, Math.round(raw * 100));
-  const running = [...steps].reverse().find((step) => step.status === "running");
   const failed = steps.find((step) => step.status === "failed");
-  const lastDone = [...steps].reverse().find((step) => step.status === "succeeded");
 
   let label = "Queued on Render";
-  if (failed) label = `${failed.name} failed`;
-  else if (running) label = `${running.name} running`;
-  else if (lastDone) label = `${lastDone.name} done`;
+  if (failed) {
+    label = `${failed.name} ${failed.status}`;
+  } else {
+    for (const step of steps) {
+      if (step.status === "running" || step.status === "pending") {
+        label = `${step.name} ${step.status}`;
+      } else if (step.status === "succeeded" && !allDone) {
+        label = `${step.name} succeeded`;
+      }
+    }
+  }
 
-  return { taskRunId: rootTaskRunId, percent, label, steps };
+  return { taskId, taskRunId: rootTaskRunId, percent, label, steps };
 }
