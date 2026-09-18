@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 type ClassifyBody = { imageBase64?: string };
-type NamedRun = { id: string; name: string; status: string };
+type NamedRun = { id: string; name: string; status: string; startedAt?: string };
 
 const taskNameCache = new Map<string, string>();
 const encoder = new TextEncoder();
@@ -84,6 +84,7 @@ async function namedRuns(
         id: run.id,
         name: await taskName(run.taskId, signal),
         status: String(run.status ?? ""),
+        startedAt: run.startedAt,
       };
     }),
   );
@@ -125,12 +126,13 @@ export async function POST(request: Request) {
           type: "progress",
           data: null,
           error: null,
-          meta: { taskId, ...snapshotFromRuns(rootId, [{ id: rootId, name: "seeFood", status: "pending" }]) },
+          meta: snapshotFromRuns(taskId, rootId, [{ id: rootId, name: "seeFood", status: "pending" }]),
         });
 
         while (!signal.aborted) {
           const runs = await namedRuns(render, rootId, signal);
           const snapshot = snapshotFromRuns(
+            taskId,
             rootId,
             runs.length > 0 ? runs : [{ id: rootId, name: "seeFood", status: "running" }],
           );
@@ -138,7 +140,7 @@ export async function POST(request: Request) {
             type: "progress",
             data: null,
             error: null,
-            meta: { taskId, ...snapshot },
+            meta: snapshot,
           });
 
           const root = runs.find((run) => run.id === rootId);

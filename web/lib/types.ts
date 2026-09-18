@@ -22,15 +22,17 @@ export type ApiEnvelope<T> = {
   meta: Record<string, unknown>;
 };
 
-export type WorkflowStepStatus = "queued" | "running" | "succeeded" | "failed";
+export type WorkflowStepStatus = "queued" | "pending" | "running" | "succeeded" | "failed";
 
 export type WorkflowStep = {
   name: string;
   status: WorkflowStepStatus;
   taskRunId?: string;
+  startedAt?: string;
 };
 
 export type WorkflowSnapshot = {
+  taskId: string;
   taskRunId: string;
   percent: number;
   label: string;
@@ -41,7 +43,7 @@ export type ClassifyProgressEvent = {
   type: "progress";
   data: null;
   error: null;
-  meta: WorkflowSnapshot & { taskId: string };
+  meta: WorkflowSnapshot;
 };
 
 export type ClassifyResultEvent = {

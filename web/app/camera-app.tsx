@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Alert, Button, Link, Navigation, RenderLogo } from "render-dds";
+import { Alert, Button, Link, Navigation, RenderLogo, ThemeToggle } from "render-dds";
 import {
   githubRepoUrl,
   renderSignupUrlWithUtms,
@@ -27,6 +27,7 @@ async function compressImage(file: File): Promise<string> {
 }
 
 const EMPTY_PROGRESS: WorkflowSnapshot = {
+  taskId: "seefood-ts/seeFood",
   taskRunId: "",
   percent: 5,
   label: "Queued on Render",
@@ -89,6 +90,7 @@ export function CameraApp() {
         links={[{ label: "GitHub", href: github }]}
         actions={
           <div className="flex items-center gap-2">
+            <ThemeToggle size="sm" />
             <DeployPicker />
             <a href={renderSignupUrlWithUtms("navbar_button")}>
               <Button type="button" size="sm">
@@ -99,7 +101,7 @@ export function CameraApp() {
         }
       />
 
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center px-6 py-10">
+      <main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center px-6 py-10">
         <h1 className="text-4xl tracking-tight">SeeFood</h1>
 
         <button
@@ -113,12 +115,6 @@ export function CameraApp() {
           ) : (
             <span className="flex h-full items-center justify-center text-8xl">🌭</span>
           )}
-
-          {loading && !result ? (
-            <div className="absolute inset-0 flex flex-col justify-end bg-black/55 p-4">
-              <WorkflowProgress snapshot={progress} />
-            </div>
-          ) : null}
 
           {result ? (
             <div
@@ -161,6 +157,12 @@ export function CameraApp() {
         {error ? (
           <div className="mt-6 w-full">
             <Alert variant="error">{error}</Alert>
+          </div>
+        ) : null}
+
+        {loading || progress.taskRunId ? (
+          <div className="mt-6 w-full">
+            <WorkflowProgress snapshot={progress} />
           </div>
         ) : null}
 

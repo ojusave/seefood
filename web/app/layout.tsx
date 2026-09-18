@@ -21,12 +21,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${inter.variable} ${roboto.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${roboto.variable} bg-background text-foreground`}
+      suppressHydrationWarning
+    >
       <head>
         <ThemeScript />
       </head>
       <body>
-        <ThemeProvider defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider defaultTheme="dark" enableSystem>
           {children}
         </ThemeProvider>
       </body>
