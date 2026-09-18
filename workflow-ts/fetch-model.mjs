@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const MODEL_URL =
   "https://github.com/onnx/models/raw/main/validated/vision/classification/squeezenet/model/squeezenet1.1-7.onnx";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const root = dirname(fileURLToPath(import.meta.url));
 const modelPath = join(root, "models", "squeezenet1.1-7.onnx");
 
 await mkdir(dirname(modelPath), { recursive: true });
