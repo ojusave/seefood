@@ -1,0 +1,56 @@
+previews:
+  generation: off
+
+services:
+  - type: web
+    name: not-hotdog-web
+    runtime: node
+    plan: starter
+    region: oregon
+    repo: https://github.com/ojusave/not-hotdog
+    branch: main
+    rootDir: web
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: RENDER_API_KEY
+        sync: false
+      - key: TS_TASK_ID
+        value: not-hotdog-ts/seeFood
+      - key: PY_TASK_ID
+        value: not-hotdog-py/seeFood
+      - key: NEXT_PUBLIC_GITHUB_REPO
+        value: https://github.com/ojusave/not-hotdog
+
+  - type: workflow
+    name: not-hotdog-ts
+    runtime: node
+    region: oregon
+    repo: https://github.com/ojusave/not-hotdog
+    branch: main
+    rootDir: workflow-ts
+    buildCommand: npm ci && npm run fetch-model && npm run build
+    startCommand: node dist/main.js
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TYPESAFE_API_KEY
+        sync: false
+
+  - type: workflow
+    name: not-hotdog-py
+    runtime: python
+    region: oregon
+    repo: https://github.com/ojusave/not-hotdog
+    branch: main
+    rootDir: workflow-py
+    buildCommand: pip install -r requirements.txt && python fetch_model.py
+    startCommand: python main.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: TYPESAFE_API_KEY
+        sync: false

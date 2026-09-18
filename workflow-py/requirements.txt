@@ -1,0 +1,5 @@
+render>=1.0.1
+typesafe-sdk>=0.6.0
+onnxruntime>=1.19.0
+pillow>=10.4.0
+numpy>=2.0.0

@@ -1,0 +1,25 @@
+{
+  "name": "not-hotdog-workflow-ts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "fetch-model": "node fetch-model.mjs",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@renderinc/sdk": "^1.1.0",
+    "@typesafe-ai/sdk": "^0.6.0",
+    "onnxruntime-node": "^1.20.1",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "allowScripts": {
+    "onnxruntime-node@1.30.0": true,
+    "sharp@0.33.5": true
+  }
+}
