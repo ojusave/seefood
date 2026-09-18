@@ -34,11 +34,18 @@ export function snapshotFromRuns(rootTaskRunId: string, runs: NamedRun[]): Workf
     .filter((name) => !PIPELINE.includes(name as (typeof PIPELINE)[number]));
   const names = [...PIPELINE, ...extras.filter((name, index, all) => all.indexOf(name) === index)];
 
+  const childActive = runs.some(
+    (run) => run.name !== "seeFood" && normalizeStatus(run.status) !== "queued",
+  );
   const steps: WorkflowStep[] = names.map((name) => {
     const run = byName.get(name);
+    let status: WorkflowStep["status"] = run ? normalizeStatus(run.status) : "queued";
+    if (name === "seeFood" && status === "queued" && childActive) {
+      status = "running";
+    }
     return {
       name,
-      status: run ? normalizeStatus(run.status) : "queued",
+      status,
       taskRunId: run?.id,
     };
   });
