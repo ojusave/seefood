@@ -34,26 +34,26 @@ export function snapshotFromRuns(rootTaskRunId: string, runs: NamedRun[]): Workf
     .filter((name) => !PIPELINE.includes(name as (typeof PIPELINE)[number]));
   const names = [...PIPELINE, ...extras.filter((name, index, all) => all.indexOf(name) === index)];
 
-  const childActive = runs.some(
-    (run) => run.name !== "seeFood" && normalizeStatus(run.status) !== "queued",
-  );
   const steps: WorkflowStep[] = names.map((name) => {
     const run = byName.get(name);
-    let status: WorkflowStep["status"] = run ? normalizeStatus(run.status) : "queued";
-    if (name === "seeFood" && status === "queued" && childActive) {
-      status = "running";
-    }
     return {
       name,
-      status,
+      status: run ? normalizeStatus(run.status) : "queued",
       taskRunId: run?.id,
     };
   });
 
+  for (let index = 0; index < steps.length; index += 1) {
+    const laterActive = steps.slice(index + 1).some((step) => step.status !== "queued");
+    if (laterActive && steps[index].status === "queued") {
+      steps[index].status = "running";
+    }
+  }
+
   const raw = steps.reduce((sum, step) => sum + SCORE[step.status], 0) / steps.length;
   const allDone = steps.every((step) => step.status === "succeeded" || step.status === "failed");
   const percent = allDone ? 100 : Math.max(8, Math.round(raw * 100));
-  const running = steps.find((step) => step.status === "running");
+  const running = [...steps].reverse().find((step) => step.status === "running");
   const failed = steps.find((step) => step.status === "failed");
   const lastDone = [...steps].reverse().find((step) => step.status === "succeeded");
 
