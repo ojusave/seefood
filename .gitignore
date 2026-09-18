@@ -11,15 +11,3 @@ __pycache__/
 .DS_Store
 .herenow/
 *.tsbuildinfo
-
-.next/
-dist/
-.venv/
-__pycache__/
-*.pyc
-.env
-.env.local
-*.onnx
-.cache/
-.DS_Store
-.herenow/
