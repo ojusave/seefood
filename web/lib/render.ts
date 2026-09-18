@@ -15,6 +15,18 @@ export function githubRepoUrl(): string {
   return process.env.NEXT_PUBLIC_GITHUB_REPO ?? "https://github.com/ojusave/seefood";
 }
 
-export function deployToRenderUrl(): string {
+const DEPLOY_BUTTON = "https://render.com/images/deploy-to-render-button.svg";
+
+export function deployButtonSrc(): string {
+  return DEPLOY_BUTTON;
+}
+
+/** TypeScript stack: web + Node workflow Blueprint on main. */
+export function deployTypescriptUrl(): string {
   return `https://render.com/deploy?repo=${githubRepoUrl()}`;
+}
+
+/** Python stack: web + Python workflow Blueprint on the python branch. */
+export function deployPythonUrl(): string {
+  return `https://render.com/deploy?repo=${githubRepoUrl()}/tree/python`;
 }

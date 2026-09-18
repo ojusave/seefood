@@ -1,21 +1,13 @@
 import { Render } from "@renderinc/sdk";
 import { NextResponse } from "next/server";
-import type { ApiEnvelope, ClassifyResult, RuntimeChoice } from "@/lib/types";
+import type { ApiEnvelope, ClassifyResult } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
 type ClassifyBody = {
   imageBase64?: string;
-  runtime?: RuntimeChoice;
 };
-
-function taskIdFor(runtime: RuntimeChoice): string {
-  if (runtime === "python") {
-    return process.env.PY_TASK_ID ?? "seefood-py/seeFood";
-  }
-  return process.env.TS_TASK_ID ?? "seefood-ts/seeFood";
-}
 
 function envelope<T>(
   data: T | null,
@@ -36,10 +28,12 @@ function readResult(run: Record<string, unknown>): ClassifyResult {
 }
 
 export async function POST(request: Request) {
+  const taskId = process.env.TASK_ID ?? "seefood-ts/seeFood";
+
   if (!process.env.RENDER_API_KEY) {
     return envelope(null, {
       code: "missing_render_api_key",
-      message: "RENDER_API_KEY is not set on the web service.",
+      message: "Not food. Try again.",
     }, {}, 500);
   }
 
@@ -47,19 +41,16 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as ClassifyBody;
   } catch {
-    return envelope(null, { code: "invalid_json", message: "Body must be JSON." }, {}, 400);
+    return envelope(null, { code: "invalid_json", message: "Not food. Try again." }, {}, 400);
   }
 
   const imageBase64 = body.imageBase64?.replace(/^data:image\/[a-zA-Z+]+;base64,/, "");
   if (!imageBase64) {
-    return envelope(null, { code: "missing_image", message: "Take or upload a photo first." }, {}, 400);
+    return envelope(null, { code: "missing_image", message: "Not food. Try again." }, {}, 400);
   }
   if (imageBase64.length > 3_500_000) {
-    return envelope(null, { code: "image_too_large", message: "Photo is too large. Try a closer, smaller shot." }, {}, 400);
+    return envelope(null, { code: "image_too_large", message: "Not food. Try again." }, {}, 400);
   }
-
-  const runtime: RuntimeChoice = body.runtime === "python" ? "python" : "typescript";
-  const taskId = taskIdFor(runtime);
 
   try {
     const render = new Render();
@@ -76,10 +67,8 @@ export async function POST(request: Request) {
     return envelope(data, null, {
       taskId,
       taskRunId: finished.id,
-      workflow: runtime,
     });
-  } catch (error) {
-    const message = "Not food. Try again.";
-    return envelope(null, { code: "workflow_error", message }, { taskId }, 502);
+  } catch {
+    return envelope(null, { code: "workflow_error", message: "Not food. Try again." }, { taskId }, 502);
   }
 }

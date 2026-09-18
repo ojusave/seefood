@@ -2,7 +2,8 @@
 
 import { useRef, useState } from "react";
 import { Alert, Button, Footer, Navigation, RenderLogo, Spinner } from "render-dds";
-import { deployToRenderUrl, githubRepoUrl, renderSignupUrlWithUtms } from "@/lib/render";
+import { githubRepoUrl, renderSignupUrlWithUtms } from "@/lib/render";
+import { DeployPicker } from "@/components/deploy-picker";
 import type { ApiEnvelope, ClassifyResult } from "@/lib/types";
 
 async function compressImage(file: File): Promise<string> {
@@ -69,13 +70,7 @@ export function CameraApp() {
         links={[{ label: "GitHub", href: github }]}
         actions={
           <div className="flex items-center gap-2">
-            <a href={deployToRenderUrl()}>
-              <img
-                src="https://render.com/images/deploy-to-render-button.svg"
-                alt="Deploy to Render"
-                height={32}
-              />
-            </a>
+            <DeployPicker />
             <a href={renderSignupUrlWithUtms("navbar_button")}>
               <Button type="button" size="sm">
                 Sign up on Render
