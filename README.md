@@ -6,6 +6,14 @@ Inspired by the SeeFood app from *Silicon Valley*.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ojusave/not-hotdog)
 
+![SeeFood camera UI](docs/images/hero.png)
+
+| HOTDOG | NOT HOTDOG |
+| --- | --- |
+| ![HOTDOG verdict](docs/images/hotdog.png) | ![NOT HOTDOG verdict](docs/images/not-hotdog.png) |
+
+![Photo to workflow to Jev](docs/images/flow.png)
+
 ## What it is
 
 1. The web app captures a photo.
