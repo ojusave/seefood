@@ -15,8 +15,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "SeeFood — hotdog or not hotdog",
-  description: "Take a photo. A Render Workflow asks Jev whether it is a hotdog.",
+  title: "SeeFood",
+  description: "HOTDOG or NOT HOTDOG.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

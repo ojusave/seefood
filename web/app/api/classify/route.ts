@@ -12,9 +12,9 @@ type ClassifyBody = {
 
 function taskIdFor(runtime: RuntimeChoice): string {
   if (runtime === "python") {
-    return process.env.PY_TASK_ID ?? "not-hotdog-py/seeFood";
+    return process.env.PY_TASK_ID ?? "seefood-py/seeFood";
   }
-  return process.env.TS_TASK_ID ?? "not-hotdog-ts/seeFood";
+  return process.env.TS_TASK_ID ?? "seefood-ts/seeFood";
 }
 
 function envelope<T>(
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
     if (status !== "succeeded" && status !== "completed") {
       return envelope(null, {
         code: "task_failed",
-        message: `Workflow run ${status}. Check the ${runtime} workflow logs.`,
+        message: "Not food. Try again.",
       }, { taskId, taskRunId: finished.id }, 502);
     }
 
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       workflow: runtime,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Workflow run failed.";
+    const message = "Not food. Try again.";
     return envelope(null, { code: "workflow_error", message }, { taskId }, 502);
   }
 }

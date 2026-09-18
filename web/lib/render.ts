@@ -12,7 +12,7 @@ export function renderSignupUrlWithUtms(
 }
 
 export function githubRepoUrl(): string {
-  return process.env.NEXT_PUBLIC_GITHUB_REPO ?? "https://github.com/ojusave/not-hotdog";
+  return process.env.NEXT_PUBLIC_GITHUB_REPO ?? "https://github.com/ojusave/seefood";
 }
 
 export function deployToRenderUrl(): string {
