@@ -30,3 +30,13 @@ export function deployTypescriptUrl(): string {
 export function deployPythonUrl(): string {
   return `https://render.com/deploy?repo=${githubRepoUrl()}/tree/python`;
 }
+
+/** Official Render Workflows docs. */
+export function renderWorkflowsUrl(): string {
+  return "https://render.com/docs/workflows";
+}
+
+/** Official TypeSafe Jev announcement. */
+export function typeSafeJevUrl(): string {
+  return "https://typesafe.ai/blog/introducing-system-one-models-and-jev";
+}

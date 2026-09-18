@@ -1,10 +1,17 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Alert, Button, Footer, Navigation, RenderLogo, Spinner } from "render-dds";
-import { githubRepoUrl, renderSignupUrlWithUtms } from "@/lib/render";
+import { Alert, Button, Link, Navigation, RenderLogo } from "render-dds";
+import {
+  githubRepoUrl,
+  renderSignupUrlWithUtms,
+  renderWorkflowsUrl,
+  typeSafeJevUrl,
+} from "@/lib/render";
+import { classifyStream } from "@/lib/classify-stream";
 import { DeployPicker } from "@/components/deploy-picker";
-import type { ApiEnvelope, ClassifyResult } from "@/lib/types";
+import { WorkflowProgress } from "@/components/workflow-progress";
+import type { ClassifyResult, WorkflowSnapshot } from "@/lib/types";
 
 async function compressImage(file: File): Promise<string> {
   const bitmap = await createImageBitmap(file);
@@ -19,6 +26,17 @@ async function compressImage(file: File): Promise<string> {
   return canvas.toDataURL("image/jpeg", 0.72).split(",")[1] ?? "";
 }
 
+const EMPTY_PROGRESS: WorkflowSnapshot = {
+  taskRunId: "",
+  percent: 5,
+  label: "Queued on Render",
+  steps: [
+    { name: "seeFood", status: "queued" },
+    { name: "labelPhoto", status: "queued" },
+    { name: "judgeHotdog", status: "queued" },
+  ],
+};
+
 export function CameraApp() {
   const cameraRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
@@ -26,6 +44,7 @@ export function CameraApp() {
   const [result, setResult] = useState<ClassifyResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<WorkflowSnapshot>(EMPTY_PROGRESS);
   const github = githubRepoUrl();
 
   function reset() {
@@ -33,6 +52,7 @@ export function CameraApp() {
     setResult(null);
     setError(null);
     setLoading(false);
+    setProgress(EMPTY_PROGRESS);
     if (cameraRef.current) cameraRef.current.value = "";
     if (uploadRef.current) uploadRef.current.value = "";
   }
@@ -41,21 +61,20 @@ export function CameraApp() {
     if (!file) return;
     setError(null);
     setResult(null);
+    setProgress(EMPTY_PROGRESS);
     setPreview(URL.createObjectURL(file));
     setLoading(true);
     try {
       const imageBase64 = await compressImage(file);
-      const response = await fetch("/api/classify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64 }),
-      });
-      const json = (await response.json()) as ApiEnvelope<ClassifyResult>;
-      if (json.error || !json.data) {
-        setError("Not food. Try again.");
-        return;
+      for await (const event of classifyStream(imageBase64)) {
+        if (event.type === "progress") {
+          setProgress(event.meta);
+        } else if (event.type === "result" && event.data) {
+          setResult(event.data);
+        } else if (event.type === "error") {
+          setError("Not food. Try again.");
+        }
       }
-      setResult(json.data);
     } catch {
       setError("Not food. Try again.");
     } finally {
@@ -95,9 +114,9 @@ export function CameraApp() {
             <span className="flex h-full items-center justify-center text-8xl">🌭</span>
           )}
 
-          {loading ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/70">
-              <Spinner variant="white" size="lg" />
+          {loading && !result ? (
+            <div className="absolute inset-0 flex flex-col justify-end bg-black/55 p-4">
+              <WorkflowProgress snapshot={progress} />
             </div>
           ) : null}
 
@@ -162,14 +181,18 @@ export function CameraApp() {
         />
       </main>
 
-      <Footer
-        centered
-        copyright="SeeFood"
-        links={[
-          { label: "GitHub", href: github },
-          { label: "Sign up on Render", href: renderSignupUrlWithUtms("footer_link") },
-        ]}
-      />
+      <footer className="border-t border-border bg-background px-6 py-8">
+        <p className="text-center text-sm text-muted-foreground">
+          Built with{" "}
+          <Link href={renderWorkflowsUrl()} variant="muted" underline="hover" external>
+            Render Workflows
+          </Link>{" "}
+          and{" "}
+          <Link href={typeSafeJevUrl()} variant="muted" underline="hover" external>
+            TypeSafe Jev
+          </Link>
+        </p>
+      </footer>
     </div>
   );
 }
