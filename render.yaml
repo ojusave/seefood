@@ -3,12 +3,12 @@ previews:
 
 services:
   - type: web
-    name: seefood-py-web
+    name: seefood
     runtime: node
     plan: starter
     region: oregon
     repo: https://github.com/ojusave/seefood
-    branch: python
+    branch: main
     rootDir: web
     buildCommand: npm ci && npm run build
     startCommand: npm start
@@ -20,21 +20,21 @@ services:
       - key: RENDER_API_KEY
         sync: false
       - key: TASK_ID
-        value: seefood-py/seeFood
+        value: seefood-ts/seeFood
       - key: NEXT_PUBLIC_GITHUB_REPO
         value: https://github.com/ojusave/seefood
 
   - type: workflow
-    name: seefood-py
-    runtime: python
+    name: seefood-ts
+    runtime: node
     region: oregon
     repo: https://github.com/ojusave/seefood
-    branch: python
-    rootDir: workflow-py
-    buildCommand: pip install -r requirements.txt && python fetch_model.py
-    startCommand: python main.py
+    branch: main
+    rootDir: workflow-ts
+    buildCommand: npm ci && npm run fetch-model && npm run build
+    startCommand: node dist/main.js
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.12.7"
+      - key: NODE_VERSION
+        value: "22"
       - key: TYPESAFE_API_KEY
         sync: false
